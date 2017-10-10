@@ -453,7 +453,10 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
     /// - parameter namespace: The namespace to join.
     open func joinNamespace(_ namespace: String) {
         nsp = namespace
-		supportedNamespaces.append(namespace)
+
+		if supportedNamespaces.index(where: {$0 == namespace}) == nil {
+			supportedNamespaces.append(namespace)
+		}
         engine?.send("0\(nsp)", withData: [])
     }
 
