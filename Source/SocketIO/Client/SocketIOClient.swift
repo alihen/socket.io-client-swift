@@ -31,6 +31,9 @@ import Foundation
 ///
 /// Represents a socket.io-client. Most interaction with socket.io will be through this class.
 open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, SocketParsable {
+
+	public var supportedNamespaces: [String] = ["/"]
+
     // MARK: Properties
 
     private static let logType = "SocketIOClient"
@@ -424,11 +427,24 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
 
     /// Leaves nsp and goes back to the default namespace.
     open func leaveNamespace() {
-        if nsp != "/" {
-            engine?.send("1\(nsp)", withData: [])
-            nsp = "/"
-        }
+        guard nsp != "/" else { return }
+
+        engine?.send("1\(nsp)", withData: [])
+        nsp = "/"
+		supportedNamespaces = ["/"]
     }
+
+	@objc
+	open func leaveNamespace(namespace: String) {
+		guard namespace != "/" else { return }
+
+		engine?.send("1\(namespace)", withData: [])
+		guard let index: Int = supportedNamespaces.index(where: {$0 == namespace}) else {
+			return
+		}
+		nsp = "/"
+		supportedNamespaces.remove(at: index)
+	}
 
     /// Joins `namespace`.
     ///
@@ -437,11 +453,8 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
     /// - parameter namespace: The namespace to join.
     open func joinNamespace(_ namespace: String) {
         nsp = namespace
-
-        if nsp != "/" {
-            DefaultSocketLogger.Logger.log("Joining namespace", type: SocketIOClient.logType)
-            engine?.send("0\(nsp)", withData: [])
-        }
+		supportedNamespaces.append(namespace)
+        engine?.send("0\(nsp)", withData: [])
     }
 
     /// Removes handler(s) for a client event.

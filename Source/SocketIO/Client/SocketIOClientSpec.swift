@@ -27,7 +27,9 @@ import Dispatch
 protocol SocketIOClientSpec : class {
     var handleQueue: DispatchQueue { get set }
     var nsp: String { get set }
+	var supportedNamespaces: [String] { get set }
     var waitingPackets: [SocketPacket] { get set }
+
 
     func didConnect(toNamespace namespace: String)
     func didDisconnect(reason: String)

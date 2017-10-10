@@ -35,15 +35,13 @@ enum SocketParsableError : Error {
 
 extension SocketParsable where Self: SocketIOClientSpec {
     private func isCorrectNamespace(_ nsp: String) -> Bool {
-        return nsp == self.nsp
+        return (self.supportedNamespaces.index(where: {$0 == nsp}) != nil)
     }
 
     private func handleConnect(_ packetNamespace: String) {
-        if packetNamespace == "/" && nsp != "/" {
-            joinNamespace(nsp)
-        } else {
-            didConnect(toNamespace: packetNamespace)
-        }
+        guard self.supportedNamespaces.index(where: {$0 == packetNamespace}) != nil else { return }
+
+        didConnect(toNamespace: packetNamespace)
     }
 
     private func handlePacket(_ pack: SocketPacket) {
