@@ -56,6 +56,7 @@ SocketIOClient* socket = [[SocketIOClient alloc] initWithSocketURL:url config:@{
 - Supports Polling and WebSockets
 - Supports TLS/SSL
 - Can be used from Objective-C
+- Added: Multiple namespace support: Refer to Namespaces.md and Integration-Example.md
 
 ## FAQS
 Checkout the [FAQs](https://nuclearace.github.io/Socket.IO-Client-Swift/faq.html) for commonly asked questions.
