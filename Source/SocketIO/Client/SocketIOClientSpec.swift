@@ -45,6 +45,7 @@ public protocol SocketIOClientSpec : class {
     ///
     /// **Must** start with a `/`.
     var nsp: String { get set }
+	var supportedNamespaces: [String] { get set }
 
     /// The status of this client.
     var status: SocketIOClientStatus { get }
