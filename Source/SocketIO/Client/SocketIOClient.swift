@@ -33,6 +33,8 @@ import Foundation
 open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, SocketParsable {
     // MARK: Properties
 
+	public var supportedNamespaces: [String] = ["/"]
+
     private static let logType = "SocketIOClient"
 
     /// If `true` then every time `connect` is called, a new engine will be created.
@@ -496,11 +498,24 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
     /// Call when you wish to leave a namespace and return to the default namespace.
     @objc
     open func leaveNamespace() {
-        guard nsp != "/" else { return }
+		guard nsp != "/" else { return }
 
-        engine?.send("1\(nsp)", withData: [])
-        nsp = "/"
+		engine?.send("1\(nsp)", withData: [])
+		nsp = "/"
+		supportedNamespaces = ["/"]
     }
+
+	@objc
+	open func leaveNamespace(namespace: String) {
+		guard namespace != "/" else { return }
+
+		engine?.send("1\(namespace)", withData: [])
+		guard let index: Int = supportedNamespaces.index(where: {$0 == namespace}) else {
+			return
+		}
+		nsp = "/"
+		supportedNamespaces.remove(at: index)
+	}
 
     /// Joins `namespace`.
     ///
@@ -509,12 +524,13 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
     /// - parameter namespace: The namespace to join.
     @objc
     open func joinNamespace(_ namespace: String) {
-        guard namespace != "/" else { return }
+		nsp = namespace
+		if supportedNamespaces.index(where: {$0 == namespace}) == nil {
+			supportedNamespaces.append(namespace)
+		}
+		engine?.send("0\(nsp)", withData: [])
 
         DefaultSocketLogger.Logger.log("Joining namespace \(namespace)", type: SocketIOClient.logType)
-
-        nsp = namespace
-        engine?.send("0\(nsp)", withData: [])
     }
 
     /// Removes handler(s) for a client event.

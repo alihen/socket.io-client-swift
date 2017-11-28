@@ -67,11 +67,11 @@ public enum SocketParsableError : Error {
 
 public extension SocketParsable where Self: SocketIOClientSpec {
     private func isCorrectNamespace(_ nsp: String) -> Bool {
-        return nsp == self.nsp
+        return self.supportedNamespaces.contains(nsp)
     }
 
     private func handleConnect(_ packetNamespace: String) {
-        guard packetNamespace == nsp else { return }
+        guard self.supportedNamespaces.index(where: {$0 == packetNamespace}) != nil else { return }
 
         didConnect(toNamespace: packetNamespace)
     }
