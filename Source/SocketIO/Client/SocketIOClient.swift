@@ -50,6 +50,9 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
     @objc
     public var nsp = "/"
 
+	@objc
+	public var supportedNamespaces = ["/"]
+
     /// The configuration for this client.
     ///
     /// **This cannot be set after calling one of the connect methods**.
@@ -500,7 +503,20 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
 
         engine?.send("1\(nsp)", withData: [])
         nsp = "/"
+		supportedNamespaces = ["/"]
     }
+
+	@objc
+	open func leaveNamespace(namespace: String) {
+		guard namespace != "/" else { return }
+
+		engine?.send("1\(nsp)", withData: [])
+		guard let index: Int = supportedNamespaces.index(where: {$0 == namespace}) else { return }
+
+		nsp = "/"
+		supportedNamespaces.remove(at: index)
+	}
+
 
     /// Joins `namespace`.
     ///
@@ -513,7 +529,11 @@ open class SocketIOClient : NSObject, SocketIOClientSpec, SocketEngineClient, So
 
         DefaultSocketLogger.Logger.log("Joining namespace \(namespace)", type: SocketIOClient.logType)
 
-        nsp = namespace
+		if supportedNamespaces.contains(namespace) {
+			return
+		}
+		
+        supportedNamespaces.append(namespace)
         engine?.send("0\(nsp)", withData: [])
     }
 
